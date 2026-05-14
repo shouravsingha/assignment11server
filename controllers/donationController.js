@@ -191,6 +191,7 @@ donationController.getAllDonationRequests = async (req, res) => {
             upazila,
             status,
             search,
+            requesterEmail,
             page = 1,
             limit = 10
         } = req.query
@@ -200,6 +201,7 @@ donationController.getAllDonationRequests = async (req, res) => {
         if (district) filter.recipientDistrict = district
         if (upazila) filter.recipientUpazila = upazila
         if (status) filter.donationStatus = status
+        if (requesterEmail) filter.requesterEmail = requesterEmail.toLowerCase()
 
         if (search) {
             const searchRegex = new RegExp(escapeRegExp(search.trim()), 'i')
@@ -475,5 +477,28 @@ donationController.deleteDonationRequest = async (req, res) => {
         })
     }
 }
+
+donationController.getDonationStats = async (req, res) => {
+    try {
+        const totalRequests = await DonationRequest.countDocuments();
+        const pendingRequests = await DonationRequest.countDocuments({ donationStatus: 'pending' });
+        const inProgressRequests = await DonationRequest.countDocuments({ donationStatus: 'inprogress' });
+        const doneRequests = await DonationRequest.countDocuments({ donationStatus: 'done' });
+        const canceledRequests = await DonationRequest.countDocuments({ donationStatus: 'canceled' });
+
+        res.json({
+            success: true,
+            stats: {
+                totalRequests,
+                pendingRequests,
+                inProgressRequests,
+                doneRequests,
+                canceledRequests
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
 
 export default donationController

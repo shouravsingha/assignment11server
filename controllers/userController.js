@@ -122,4 +122,65 @@ userController.updateProfile = async (req, res) => {
     }
 }
 
+userController.updateStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        if (!['active', 'blocked'].includes(status)) {
+            return res.status(400).json({ success: false, message: 'Invalid status' });
+        }
+
+        const user = await User.findByIdAndUpdate(id, { status }, { new: true });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        res.json({ success: true, message: `User ${status} successfully`, user });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+userController.updateRole = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { role } = req.body;
+
+        if (!['donor', 'volunteer', 'admin'].includes(role)) {
+            return res.status(400).json({ success: false, message: 'Invalid role' });
+        }
+
+        const user = await User.findByIdAndUpdate(id, { role }, { new: true });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        res.json({ success: true, message: `User role updated to ${role}`, user });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+userController.getAdminStats = async (req, res) => {
+    try {
+        const totalUsers = await User.countDocuments();
+        const totalDonors = await User.countDocuments({ role: 'donor' });
+        const totalVolunteers = await User.countDocuments({ role: 'volunteer' });
+        const totalAdmins = await User.countDocuments({ role: 'admin' });
+
+        res.json({
+            success: true,
+            stats: {
+                totalUsers,
+                totalDonors,
+                totalVolunteers,
+                totalAdmins
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 export default userController
