@@ -6,6 +6,7 @@ import userController from '../controllers/userController.js'
 const router = express.Router()
 
 // Public/User routes
+router.get('/search-donors', userController.searchDonors)
 router.get('/profile', verifyToken, userController.getUserProfile)
 router.put('/profile', verifyToken, userController.updateProfile)
 

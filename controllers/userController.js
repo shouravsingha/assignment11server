@@ -4,6 +4,22 @@ const userController = {}
 
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 
+userController.searchDonors = async (req, res) => {
+    try {
+        const { bloodGroup, district, upazila } = req.query;
+        const query = { role: 'donor', status: 'active' };
+
+        if (bloodGroup) query.bloodGroup = bloodGroup;
+        if (district) query.district = district;
+        if (upazila) query.upazila = upazila;
+
+        const users = await User.find(query).select('name email avatar bloodGroup district upazila status createdAt');
+        res.json({ success: true, users });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
 userController.getAllUsers = async (req, res) => {
     try {
         const users = await User.find({});
