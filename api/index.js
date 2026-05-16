@@ -32,6 +32,10 @@ const connect = async () => {
     isConnected = true;
 };
 
+// Favicon request ignore
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+app.get('/favicon.png', (req, res) => res.status(204).end());
+
 // Create a main router
 const mainRouter = express.Router()
 
