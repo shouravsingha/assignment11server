@@ -15,7 +15,11 @@
     ],
     "author": "Blood Donation Team",
     "license": "MIT",
+    "engines": {
+      "node": "20.x"
+    },
     "dependencies": {
+
         "bcryptjs": "^2.4.3",
         "cors": "^2.8.5",
         "dotenv": "^16.3.1",

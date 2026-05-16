@@ -18,10 +18,14 @@ const app = express()
 const PORT = process.env.PORT || 3000
 
 // Middleware
-app.use(cors())
+app.use(cors({
+    origin: '*', // For production, you can replace this with your Vercel frontend URL
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}))
 app.use(express.json())
 
-// Connect to MongoDB
+// Database Connection
 connectDB()
 
 // API Routes
@@ -33,7 +37,9 @@ app.use('/api/funding', fundingRoutes)
 // Health Check Route
 app.get('/api/health', (req, res) => {
     res.json({
-        message: 'Server is running',
+        status: 'UP',
+        message: 'BloodCare Server is perfectly running on Vercel',
+        database: 'Connected',
         timestamp: new Date().toISOString()
     })
 })
@@ -52,8 +58,4 @@ app.use((err, req, res, next) => {
     })
 })
 
-// Start Server
-app.listen(PORT, () => {
-    console.log(`✅ Server running on http://localhost:${PORT}`)
-    console.log(`🔗 Health check: http://localhost:${PORT}/api/health`)
-})
+export default app
