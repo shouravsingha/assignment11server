@@ -1,287 +1,148 @@
 # Blood Donation Application - Server
 
-Backend API built with Node.js, Express, and MongoDB.
+Backend API built with Node.js, Express, and MongoDB. This server handles authentication, user management, donation requests, and payment processing.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
+- Node.js (v18 or higher recommended)
 - MongoDB (local or Atlas)
 - npm or yarn
 
 ### Installation
 
 ```bash
+# Navigate to the server directory
+cd server
+
 # Install dependencies
 npm install
 
 # Create .env file from example
 cp .env.example .env
-
-# Update .env with your configuration
-# Then start the development server
-npm run dev
 ```
 
-The server will be available at `http://localhost:5000`
+### Configuration
 
-## 📦 Available Scripts
-
-- `npm start` - Start production server
-- `npm run dev` - Start development server with auto-reload (requires nodemon)
-
-## 🏗️ Project Structure
-
-```
-server/
-├── config/
-│   └── database.js          # MongoDB connection
-├── models/
-│   ├── User.js              # User schema
-│   ├── DonationRequest.js   # Donation request schema
-│   └── Funding.js           # Funding schema
-├── controllers/
-│   ├── authController.js    # Auth logic
-│   ├── userController.js    # User management
-│   ├── donationController.js # Donation requests
-│   └── fundingController.js  # Funding logic
-├── routes/
-│   ├── authRoutes.js        # Auth endpoints
-│   ├── userRoutes.js        # User endpoints
-│   ├── donationRoutes.js    # Donation endpoints
-│   └── fundingRoutes.js     # Funding endpoints
-├── middleware/
-│   └── verifyToken.js       # JWT verification
-├── server.js                # Entry point
-├── package.json
-└── .env.example
-```
-
-## 🔐 Environment Variables
-
-Create a `.env` file with the following variables:
+Update your `.env` file with your specific configuration:
 
 ```env
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/blood-donation
 NODE_ENV=development
-JWT_SECRET=your_jwt_secret_key_change_this_in_production
+JWT_SECRET=your_jwt_secret_key
 STRIPE_SECRET_KEY=your_stripe_secret_key
 ```
 
-### Database Connection Options
+### Running the Server
 
-#### Local MongoDB
+```bash
+# Start development server with nodemon
+npm run dev
+
+# Start production server
+npm start
+```
+
+The server will be available at `http://localhost:5000`.
+
+## 📦 Available Scripts
+
+- `npm start` - Start production server using `node server.js`
+- `npm run dev` - Start development server with `nodemon` for auto-reload
+
+## 🏗️ Project Structure
 
 ```
-MONGODB_URI=mongodb://localhost:27017/blood-donation
-```
-
-#### MongoDB Atlas
-
-```
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/blood-donation
+server/
+├── config/              # Configuration files
+│   ├── database.js      # MongoDB connection using Mongoose
+│   └── firebase-admin.js # Firebase Admin SDK initialization
+├── models/              # Mongoose schemas & models
+│   ├── User.js          # User profile and role management
+│   ├── DonationRequest.js # Blood donation request data
+│   └── Funding.js       # Payment and transaction records
+├── controllers/         # Business logic (Request handlers)
+│   ├── authController.js # Login, registration, and JWT issuance
+│   ├── userController.js # User search, profile updates, and admin tasks
+│   ├── donationController.js # CRUD for donation requests
+│   └── fundingController.js # Stripe integration and funding tracking
+├── routes/              # API endpoint definitions
+│   ├── authRoutes.js    # /api/auth/*
+│   ├── userRoutes.js    # /api/users/*
+│   ├── donationRoutes.js # /api/donation-requests/*
+│   └── fundingRoutes.js  # /api/funding/*
+├── middleware/          # Custom Express middleware
+│   ├── verifyToken.js   # Validates JWT in Authorization header
+│   ├── verifyAdmin.js   # Restricts access to Admin role
+│   └── verifyVolunteer.js # Restricts access to Volunteers and Admins
+├── server.js            # Main entry point and Express app setup
+├── package.json         # Dependencies and scripts
+└── .env.example         # Template for environment variables
 ```
 
 ## 📚 API Endpoints
 
-### Base URL
+### Authentication (`/api/auth`)
+- `POST /register` - Register a new user (Donor by default)
+- `POST /login` - Authenticate user and return JWT
 
-```
-http://localhost:5000/api
-```
+### Users (`/api/users`)
+- `GET /search-donors` - Search for donors by location and blood group (Public)
+- `GET /profile` - Get logged-in user's profile (Authenticated)
+- `PUT /profile` - Update own profile (Authenticated)
+- `GET /` - Get all users with filtering (Admin Only)
+- `GET /admin-stats` - Get system-wide statistics (Admin Only)
+- `PATCH/:id/status` - Update user status (active/blocked) (Admin Only)
+- `PATCH/:id/role` - Update user role (donor/volunteer/admin) (Admin Only)
 
-### Authentication
+### Donation Requests (`/api/donation-requests`)
+- `GET /` - Get all donation requests with filtering (Public)
+- `POST /` - Create a new blood donation request (Authenticated)
+- `GET /get-stats` - Get donation-related stats (Volunteer/Admin)
+- `GET/:id` - Get details of a specific request
+- `POST/:id/donate` - Mark a request as "inprogress" by a donor (Authenticated)
+- `PATCH/:id/status` - Update request status (pending/inprogress/done/canceled) (Authenticated)
+- `PUT/:id` - Update request details (Authenticated)
+- `DELETE/:id` - Remove a donation request (Authenticated)
 
-- `POST /auth/register` - Register new user
-- `POST /auth/login` - Login user
+### Funding (`/api/funding`)
+- `POST /create-payment-intent` - Initialize Stripe payment (Authenticated)
+- `POST /save-funding` - Record successful transaction in DB (Authenticated)
+- `GET /` - Get all funding history (Authenticated)
+- `GET /total` - Get total funds raised (Public)
 
-### Users
+## 🛠️ Tech Stack
 
-- `GET /users` - Get all users (admin only)
-- `GET /users/profile` - Get logged-in user profile
-- `PUT /users/profile` - Update user profile
+- **Runtime:** [Node.js](https://nodejs.org/)
+- **Framework:** [Express.js](https://expressjs.com/)
+- **Database:** [MongoDB](https://www.mongodb.com/) with [Mongoose](https://mongoosejs.com/)
+- **Auth:** [JSON Web Token (JWT)](https://jwt.io/) & [bcryptjs](https://www.npmjs.com/package/bcryptjs)
+- **Payments:** [Stripe API](https://stripe.com/docs/api)
+- **Admin Tools:** [Firebase Admin SDK](https://firebase.google.com/docs/admin)
 
-### Donation Requests
+## 🛡️ Security & Middleware
 
-- `GET /donation-requests` - Get all requests
-- `POST /donation-requests` - Create request (auth required)
-- `GET /donation-requests/:id` - Get request details
-- `PUT /donation-requests/:id` - Update request (auth required)
-- `DELETE /donation-requests/:id` - Delete request (auth required)
-
-### Funding
-
-- `GET /funding` - Get all fundings
-- `POST /funding` - Create funding (auth required)
-- `GET /funding/total` - Get total funding
-
-## 🔑 Key Features
-
-### Authentication
-
-- JWT-based authentication
-- Bcryptjs password hashing
-- Token verification middleware
-- Secure password storage
-
-### Models
-
-#### User Model
-
-- Email, name, avatar, blood group
-- District and upazila
-- Role-based access (donor, volunteer, admin)
-- Status tracking (active, blocked)
-
-#### Donation Request Model
-
-- Requester and recipient information
-- Blood group and location details
-- Hospital and address information
-- Donation date and time
-- Status tracking (pending, inprogress, done, canceled)
-- Donor information (when status is inprogress)
-
-#### Funding Model
-
-- User information
-- Fund amount and transaction ID
-- Payment method tracking
-- Funding date and status
-
-## 🛡️ Security Features
-
-- **Password Hashing:** bcryptjs with 10 salt rounds
-- **JWT Authentication:** Secure token-based auth
-- **CORS:** Enabled for cross-origin requests
-- **Environment Variables:** All sensitive data in .env
-- **Input Validation:** Schema-level validation
-- **Error Handling:** Comprehensive error middleware
-
-## 🔄 Middleware
-
-### verifyToken
-
-Verifies JWT tokens from Authorization header and attaches user data to request object.
-
-```javascript
-// Usage
-app.use('/api/protected-route', verifyToken, controllerFunction)
-```
-
-## 💾 Database Models
-
-### User
-
-```javascript
-{
-  _id: ObjectId,
-  name: String,
-  email: String (unique),
-  password: String (hashed),
-  avatar: String (URL),
-  bloodGroup: String (enum),
-  district: String,
-  upazila: String,
-  role: String (donor|volunteer|admin),
-  status: String (active|blocked),
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
-### DonationRequest
-
-```javascript
-{
-  _id: ObjectId,
-  requesterEmail: String,
-  requesterName: String,
-  recipientName: String,
-  recipientDistrict: String,
-  recipientUpazila: String,
-  hospitalName: String,
-  fullAddress: String,
-  bloodGroup: String,
-  donationDate: Date,
-  donationTime: String,
-  requestMessage: String,
-  donationStatus: String (pending|inprogress|done|canceled),
-  donorName: String,
-  donorEmail: String,
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
-### Funding
-
-```javascript
-{
-  _id: ObjectId,
-  userEmail: String,
-  userName: String,
-  fundAmount: Number,
-  paymentMethodId: String,
-  transactionId: String (unique),
-  status: String (pending|completed|failed),
-  fundingDate: Date,
-  createdAt: Date,
-  updatedAt: Date
-}
-```
+- **JWT Verification:** All protected routes require a valid Bearer token in the `Authorization` header.
+- **Role-Based Access Control (RBAC):** Middleware checks for `admin` or `volunteer` roles before granting access to sensitive endpoints.
+- **Password Hashing:** Uses `bcryptjs` with a salt factor of 10 to ensure user credentials remain secure.
+- **CORS:** Configured to allow requests from specific frontend origins.
+- **Validation:** Schema-level validation via Mongoose.
 
 ## 🚀 Deployment
 
-### Railway.app
+The server is configured for deployment on **Vercel** (see `vercel.json`).
 
-1. Connect GitHub repository
-2. Set environment variables
-3. Deploy automatically
-
-### Render.com
-
-1. Connect GitHub repository
-2. Configure build and start commands
-3. Set environment variables
-4. Deploy
-
-## 📝 Contributing
-
-1. Create a feature branch
-2. Make your changes
-3. Test your changes
-4. Commit with meaningful messages
-5. Push to the branch
-6. Open a pull request
+1.  Connect your repository to Vercel.
+2.  Add all environment variables from your `.env` to the Vercel project settings.
+3.  Ensure your MongoDB Atlas cluster allows connections from the Vercel deployment IP (or allow all IPs `0.0.0.0/0`).
 
 ## 🐛 Troubleshooting
 
-### MongoDB Connection Error
-
-- Verify MONGODB_URI in .env
-- Check MongoDB service is running
-- Verify network access (for Atlas)
-
-### Port Already in Use
-
-```bash
-# Find and kill process on port 5000
-# Windows
-netstat -ano | findstr :5000
-taskkill /PID <PID> /F
-```
-
-### CORS Error
-
-- Verify frontend URL in CORS configuration
-- Check request headers
-
-## 📞 Support
-
-For issues or questions, please create an issue in the repository.
+- **Database Connection:** If the server fails to start, verify your `MONGODB_URI` and ensure your database is reachable.
+- **Token Expiry:** If requests return 401/403, check if the JWT has expired or if the `JWT_SECRET` matches on both ends.
+- **Stripe Errors:** Ensure you are using the correct secret key and that your Stripe account is in test mode if using test keys.
 
 ---
 
