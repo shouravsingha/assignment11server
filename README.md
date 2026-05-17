@@ -146,4 +146,9 @@ The server is configured for deployment on **Vercel** (see `vercel.json`).
 
 ---
 
+Front-end Live Site Link: https://blood-donate-f8736.web.app/
+Client Side GitHub Repository Link: https://github.com/shouravsingha/assignment11client.git
+Server Side GitHub Repository Link: https://github.com/shouravsingha/assignment11server.git
+
+
 Built with ❤️ for the Blood Donation Application
